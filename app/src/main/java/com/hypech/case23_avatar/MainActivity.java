@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -32,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
     SharedPreferences mySP;
     SharedPreferences.Editor myEditor;
 
-    PopupWindowMultipeChoice mPopup;
+    MyPopup mPopup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void click_change_avatar(View v){
-        mPopup = new PopupWindowMultipeChoice(MainActivity.this,
+        mPopup = new MyPopup(MainActivity.this,
                                                 new View.OnClickListener() {
             @Override
             public void onClick(View v) {

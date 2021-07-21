@@ -10,15 +10,15 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.PopupWindow;
 
-public class PopupWindowMultipeChoice extends PopupWindow {
+public class MyPopup extends PopupWindow {
     private View mView;
     private Context mContext;
     private View.OnClickListener mGalleryListener;   // photo gallery listener
     private View.OnClickListener mCaptureListener;  // camera listener
 
-    public PopupWindowMultipeChoice(Activity context,
-                                    View.OnClickListener galleryListener,
-                                    View.OnClickListener captureListener) {
+    public MyPopup(Activity context,
+                   View.OnClickListener galleryListener,
+                   View.OnClickListener captureListener) {
         super(context);
         this.mContext = context;
         this.mGalleryListener = galleryListener;
@@ -27,10 +27,8 @@ public class PopupWindowMultipeChoice extends PopupWindow {
     }
 
     private void Init() {
-        LayoutInflater inflater = (LayoutInflater) mContext
-                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        mView = inflater.inflate(R.layout.multiple_choice, null);
-//        mView = inflater.inflate(R.layout.pop_item, null);
+        LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        mView = inflater.inflate(R.layout.popup_window, null);
 
         Button btn_camera = mView.findViewById(R.id.button_camera);
         Button btn_gallery= mView.findViewById(R.id.button_gallery);
