@@ -100,7 +100,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void click_picture(View v){
         // request permission for gallery
-
         if (ContextCompat.checkSelfPermission(MainActivity.this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MainActivity.this,
@@ -109,7 +108,6 @@ public class MainActivity extends AppCompatActivity {
             myPop.dismiss();
             Intent intent = new Intent(Intent.ACTION_PICK);
             intent.setType("image/*");
-
             // find the app to handle image
             if (intent.resolveActivity(getPackageManager()) != null) {
                 startActivityForResult(intent, REQUEST_IMAGE_GET);
@@ -253,16 +251,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void cropPic(Uri uri) {
-        // 创建大图文件夹
+        // create folder
         Uri imageUri = null;
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             String storage = Environment.getExternalStorageDirectory().getPath();
             File dirFile = new File(storage + "/bigIcon");
             if (!dirFile.exists()) {
                 if (!dirFile.mkdirs()) {
-                    Log.e("TAG", "文件夹创建失败");
+                    Log.e("TAG", "Failed.");
                 } else {
-                    Log.e("TAG", "文件夹创建成功");
+                    Log.e("TAG", "Succeed! ");
                 }
             }
             File file = new File(dirFile, System.currentTimeMillis() + ".jpg");
@@ -289,6 +287,39 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
         // intent.putExtra("noFaceDetection", true); // no face detection
         startActivityForResult(intent, REQUEST_BIG_IMAGE_CUTTING);
+    }
+
+    public void cropping(String type){
+        // 开始切割
+        Intent intent = new Intent("com.android.camera.action.CROP");
+        intent.setDataAndType(uri, "image/*");
+        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        intent.putExtra("crop", "true");
+        intent.putExtra("aspectX", 1); // 裁剪框比例
+        intent.putExtra("aspectY", 1);
+        intent.putExtra("outputX", 600); // 输出图片大小
+        intent.putExtra("outputY", 600);
+        intent.putExtra("scale", true);
+        intent.putExtra("return-data", false); // 不直接返回数据
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri); // 返回一个文件
+        intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
+        // intent.putExtra("noFaceDetection", true); // no face detection
+        startActivityForResult(intent, REQUEST_BIG_IMAGE_CUTTING);
+
+        Intent intent = new Intent("com.android.camera.action.CROP");
+        intent.setDataAndType(getImageContentUri(MainActivity.this, inputFile), "image/*");
+        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        intent.putExtra("crop", "true");
+        intent.putExtra("aspectX", 1);
+        intent.putExtra("aspectY", 1);
+        intent.putExtra("outputX", 600);
+        intent.putExtra("outputY", 600);
+        intent.putExtra("scale", true);
+        intent.putExtra("return-data", false);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+        intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
+        startActivityForResult(intent, REQUEST_BIG_IMAGE_CUTTING);
+
     }
 
     public Uri getImageContentUri(Context context, File imageFile) {
