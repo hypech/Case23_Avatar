@@ -290,35 +290,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void cropping(String type){
-        // 开始切割
-        Intent intent = new Intent("com.android.camera.action.CROP");
-        intent.setDataAndType(uri, "image/*");
-        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        intent.putExtra("crop", "true");
-        intent.putExtra("aspectX", 1); // 裁剪框比例
-        intent.putExtra("aspectY", 1);
-        intent.putExtra("outputX", 600); // 输出图片大小
-        intent.putExtra("outputY", 600);
-        intent.putExtra("scale", true);
-        intent.putExtra("return-data", false); // 不直接返回数据
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri); // 返回一个文件
-        intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
-        // intent.putExtra("noFaceDetection", true); // no face detection
-        startActivityForResult(intent, REQUEST_BIG_IMAGE_CUTTING);
-
-        Intent intent = new Intent("com.android.camera.action.CROP");
-        intent.setDataAndType(getImageContentUri(MainActivity.this, inputFile), "image/*");
-        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        intent.putExtra("crop", "true");
-        intent.putExtra("aspectX", 1);
-        intent.putExtra("aspectY", 1);
-        intent.putExtra("outputX", 600);
-        intent.putExtra("outputY", 600);
-        intent.putExtra("scale", true);
-        intent.putExtra("return-data", false);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-        intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
-        startActivityForResult(intent, REQUEST_BIG_IMAGE_CUTTING);
 
     }
 
