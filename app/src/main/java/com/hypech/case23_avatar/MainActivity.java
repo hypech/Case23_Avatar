@@ -26,6 +26,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.Toast;
 
@@ -39,21 +40,33 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     private static final int REQUEST_SMALL_IMAGE_CUTTING = 2;
     private static final int REQUEST_BIG_IMAGE_CUTTING = 3;
-    private static final String IMAGE_FILE_NAME = "case23avatar.jpg";
+    private static final String IMAGE_FILE_NAME = "case23avatar1.jpg";
 
     SharedPreferences mySP;
     SharedPreferences.Editor myEditor;
 
-    Uri mImageUri;
+    Uri  mImageUri;
     View mView;
+    ImageView mAvatar;
+    String imageUriString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Log.e(TAG, "on create restart");
 
-        mySP = getSharedPreferences("com.hypech.case23", 0);
+        mySP     = getSharedPreferences("com.hypech.case23", 0);
         myEditor = mySP.edit();
+
+        mAvatar = findViewById(R.id.main_icon);
+
+        imageUriString = mySP.getString("cropURI", null);
+        if (imageUriString !=null) {
+            Uri imageUri = Uri.parse(imageUriString); //<-- parse
+            mAvatar.setImageURI(imageUri);
+        }
+
     }
 
     public void click_change_avatar(View v){
@@ -63,15 +76,13 @@ public class MainActivity extends AppCompatActivity {
         mView = inflater.inflate(R.layout.popup_window, null);
 
         // create the popup window
-        int width = WindowManager.LayoutParams.MATCH_PARENT;
-        int height = WindowManager.LayoutParams.MATCH_PARENT;
+        int width   = WindowManager.LayoutParams.MATCH_PARENT;
+        int height  = WindowManager.LayoutParams.MATCH_PARENT;
         boolean focusable = true; // lets taps outside the popup also dismiss it
 
         myPop = new PopupWindow(mView, width, height, focusable);
-
         myPop.setAnimationStyle(R.style.popwindow_anim_style);
-        ColorDrawable dw = new ColorDrawable(0x0000000);
-        myPop.setBackgroundDrawable(dw);
+        myPop.setBackgroundDrawable(new ColorDrawable(0x0000000));
 
         // show the popup window
         // which view you pass in doesn't matter, it is only used for the window tolken
@@ -129,30 +140,31 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        // 回调成功
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
-                // 小图切割
-                // 相册选取
+                // gallery
                 case REQUEST_IMAGE_GET:
                     try {
-                        // startSmallPhotoZoom(data.getData());
-                        startBigPhotoZoom(data.getData());
+                        cropPic(data.getData());
                     } catch (NullPointerException e) {
                         e.printStackTrace();
                     }
                     break;
-                // 拍照
+                // camera
                 case REQUEST_IMAGE_CAPTURE:
                     File temp = new File(Environment.getExternalStorageDirectory() + "/" + IMAGE_FILE_NAME);
-                    // startSmallPhotoZoom(Uri.fromFile(temp));
-                    // startBigPhotoZoom(temp);
+                    cropPic(temp);
+                case REQUEST_BIG_IMAGE_CUTTING:
+                    Log.e(TAG,"call back");
+                    Bitmap bitmap = BitmapFactory.decodeFile(mImageUri.getEncodedPath());
+                    mAvatar.setImageBitmap(bitmap);
+                    break;
             }
         }
     }
 
     /**
-     * 处理权限回调结果
+     * call back results
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -192,8 +204,10 @@ public class MainActivity extends AppCompatActivity {
         File pictureFile = new File(Environment.getExternalStorageDirectory(), IMAGE_FILE_NAME);
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
         Uri pictureUri = FileProvider.getUriForFile(this,
                 "hypech.com.fileProvider", pictureFile);
+
         myEditor.putString("imageURI", pictureUri.toString()); //<-- toString()
         myEditor.commit();
 
@@ -201,45 +215,44 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, REQUEST_IMAGE_CAPTURE);
     }
 
-    public void startBigPhotoZoom(File inputFile) {
-        // 创建大图文件夹
+    public void cropPic(File inputFile) {
+        // create folder bigAvatar
         Uri imageUri = null;
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             String storage = Environment.getExternalStorageDirectory().getPath();
-            File dirFile = new File(storage + "/bigIcon");
+            File dirFile = new File(storage + "/cropAvatar");
             if (!dirFile.exists()) {
                 if (!dirFile.mkdirs()) {
-                    Log.e("TAG", "文件夹创建失败");
+                    Log.e("TAG", "failed.");
                 } else {
-                    Log.e("TAG", "文件夹创建成功");
+                    Log.e("TAG", "Success!");
                 }
             }
             File file = new File(dirFile, System.currentTimeMillis() + ".jpg");
             imageUri = Uri.fromFile(file);
-            mImageUri = imageUri; // 将 uri 传出，方便设置到视图中
+            mImageUri = imageUri;
 
-            myEditor.putString("imageURI", imageUri.toString()); //<-- toString()
+            myEditor.putString("cropURI", imageUri.toString()); //<-- toString()
             myEditor.commit();
         }
 
-        // 开始切割
+        // Crop
         Intent intent = new Intent("com.android.camera.action.CROP");
         intent.setDataAndType(getImageContentUri(MainActivity.this, inputFile), "image/*");
         intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         intent.putExtra("crop", "true");
-        intent.putExtra("aspectX", 1); // 裁剪框比例
+        intent.putExtra("aspectX", 1);
         intent.putExtra("aspectY", 1);
-        intent.putExtra("outputX", 600); // 输出图片大小
+        intent.putExtra("outputX", 600);
         intent.putExtra("outputY", 600);
         intent.putExtra("scale", true);
-        intent.putExtra("return-data", false); // 不直接返回数据
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri); // 返回一个文件
+        intent.putExtra("return-data", false);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
         intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
-        // intent.putExtra("noFaceDetection", true); // no face detection
         startActivityForResult(intent, REQUEST_BIG_IMAGE_CUTTING);
     }
 
-    public void startBigPhotoZoom(Uri uri) {
+    public void cropPic(Uri uri) {
         // 创建大图文件夹
         Uri imageUri = null;
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
@@ -302,6 +315,4 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
-
 }
