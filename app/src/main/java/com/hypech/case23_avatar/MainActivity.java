@@ -36,11 +36,10 @@ public class MainActivity extends AppCompatActivity {
     final String TAG = "===> ";
 
     PopupWindow myPop;
-    private static final int REQUEST_IMAGE_GET = 0;
-    private static final int REQUEST_IMAGE_CAPTURE = 1;
-    private static final int REQUEST_SMALL_IMAGE_CUTTING = 2;
-    private static final int REQUEST_BIG_IMAGE_CUTTING = 3;
-    private static final String IMAGE_FILE_NAME = "case23avatar1.jpg";
+    private static final int REQUEST_GALLERY= 0;
+    private static final int REQUEST_CAMERA = 1;
+    private static final int REQUEST_CROP   = 3;
+    private static final String IMAGE_FILE_NAME = "case23avatar.jpg";
 
     SharedPreferences mySP;
     SharedPreferences.Editor myEditor;
@@ -110,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
             intent.setType("image/*");
             // find the app to handle image
             if (intent.resolveActivity(getPackageManager()) != null) {
-                startActivityForResult(intent, REQUEST_IMAGE_GET);
+                startActivityForResult(intent, REQUEST_GALLERY);
             } else {
                 Toast.makeText(MainActivity.this, "No App could open gallery.", Toast.LENGTH_SHORT).show();
             }
@@ -141,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
                 // gallery
-                case REQUEST_IMAGE_GET:
+                case REQUEST_GALLERY:
                     try {
                         cropPic(data.getData());
                     } catch (NullPointerException e) {
@@ -149,10 +148,11 @@ public class MainActivity extends AppCompatActivity {
                     }
                     break;
                 // camera
-                case REQUEST_IMAGE_CAPTURE:
+                case REQUEST_CAMERA:
                     File temp = new File(Environment.getExternalStorageDirectory() + "/" + IMAGE_FILE_NAME);
-                    cropPic(temp);
-                case REQUEST_BIG_IMAGE_CUTTING:
+                    Uri uri = getImageContentUri(MainActivity.this, temp);
+                    cropPic(uri);
+                case REQUEST_CROP:
                     Log.e(TAG,"call back");
                     Bitmap bitmap = BitmapFactory.decodeFile(mImageUri.getEncodedPath());
                     mAvatar.setImageBitmap(bitmap);
@@ -173,10 +173,10 @@ public class MainActivity extends AppCompatActivity {
                     myPop.dismiss();
                     Intent intent = new Intent(Intent.ACTION_PICK);
                     intent.setType("image/*");
-                    startActivityForResult(intent, REQUEST_IMAGE_GET);
+                    startActivityForResult(intent, REQUEST_GALLERY);
                     // 判断系统中是否有处理该 Intent 的 Activity
                     if (intent.resolveActivity(getPackageManager()) != null) {
-                        startActivityForResult(intent, REQUEST_IMAGE_GET);
+                        startActivityForResult(intent, REQUEST_GALLERY);
                     } else {
                         Toast.makeText(MainActivity.this, "未找到图片查看器", Toast.LENGTH_SHORT).show();
                     }
@@ -206,37 +206,27 @@ public class MainActivity extends AppCompatActivity {
         Uri pictureUri = FileProvider.getUriForFile(this,
                 "hypech.com.fileProvider", pictureFile);
 
-        myEditor.putString("imageURI", pictureUri.toString()); //<-- toString()
-        myEditor.commit();
-
         intent.putExtra(MediaStore.EXTRA_OUTPUT, pictureUri);
-        startActivityForResult(intent, REQUEST_IMAGE_CAPTURE);
+        startActivityForResult(intent, REQUEST_CAMERA);
     }
 
-    public void cropPic(File inputFile) {
-        // create folder bigAvatar
-        Uri imageUri = null;
+    public void cropPic(Uri uri) {
+        // create folder
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             String storage = Environment.getExternalStorageDirectory().getPath();
             File dirFile = new File(storage + "/cropAvatar");
-            if (!dirFile.exists()) {
-                if (!dirFile.mkdirs()) {
-                    Log.e("TAG", "failed.");
-                } else {
-                    Log.e("TAG", "Success!");
-                }
-            }
+            if (!dirFile.exists()) dirFile.mkdirs();
             File file = new File(dirFile, System.currentTimeMillis() + ".jpg");
-            imageUri = Uri.fromFile(file);
-            mImageUri = imageUri;
+            mImageUri = Uri.fromFile(file);
 
-            myEditor.putString("cropURI", imageUri.toString()); //<-- toString()
+            myEditor.putString("cropURI", mImageUri.toString());
             myEditor.commit();
+
         }
 
-        // Crop
+        // start croping
         Intent intent = new Intent("com.android.camera.action.CROP");
-        intent.setDataAndType(getImageContentUri(MainActivity.this, inputFile), "image/*");
+        intent.setDataAndType(uri, "image/*");
         intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         intent.putExtra("crop", "true");
         intent.putExtra("aspectX", 1);
@@ -245,52 +235,9 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("outputY", 600);
         intent.putExtra("scale", true);
         intent.putExtra("return-data", false);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, mImageUri);
         intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
-        startActivityForResult(intent, REQUEST_BIG_IMAGE_CUTTING);
-    }
-
-    public void cropPic(Uri uri) {
-        // create folder
-        Uri imageUri = null;
-        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            String storage = Environment.getExternalStorageDirectory().getPath();
-            File dirFile = new File(storage + "/bigIcon");
-            if (!dirFile.exists()) {
-                if (!dirFile.mkdirs()) {
-                    Log.e("TAG", "Failed.");
-                } else {
-                    Log.e("TAG", "Succeed! ");
-                }
-            }
-            File file = new File(dirFile, System.currentTimeMillis() + ".jpg");
-            imageUri = Uri.fromFile(file);
-            mImageUri = imageUri; // 将 uri 传出，方便设置到视图中
-
-            myEditor.putString("imageURI", imageUri.toString()); //<-- toString()
-            myEditor.commit();
-
-        }
-
-        // 开始切割
-        Intent intent = new Intent("com.android.camera.action.CROP");
-        intent.setDataAndType(uri, "image/*");
-        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        intent.putExtra("crop", "true");
-        intent.putExtra("aspectX", 1); // 裁剪框比例
-        intent.putExtra("aspectY", 1);
-        intent.putExtra("outputX", 600); // 输出图片大小
-        intent.putExtra("outputY", 600);
-        intent.putExtra("scale", true);
-        intent.putExtra("return-data", false); // 不直接返回数据
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri); // 返回一个文件
-        intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
-        // intent.putExtra("noFaceDetection", true); // no face detection
-        startActivityForResult(intent, REQUEST_BIG_IMAGE_CUTTING);
-    }
-
-    public void cropping(String type){
-
+        startActivityForResult(intent, REQUEST_CROP);
     }
 
     public Uri getImageContentUri(Context context, File imageFile) {
