@@ -6,19 +6,6 @@
     android:layout_height="match_parent"
     android:background="#66000000">
 
-    <LinearLayout
-        android:id="@+id/ll_pop"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_alignParentBottom="true"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/button_camera"
-        app:layout_constraintStart_toStartOf="@+id/button_camera"
-        app:layout_constraintTop_toTopOf="@+id/button_gallery">
-
-    </LinearLayout>
-
     <Button
         android:id="@+id/button_gallery"
         android:layout_width="0dp"
@@ -26,7 +13,7 @@
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
         android:backgroundTint="#FFFFFF"
-        android:onClick="click_gallery"
+        android:onClick="click_picture"
         android:text="Gallery"
         android:textColor="#40cab3"
         app:layout_constraintBottom_toTopOf="@+id/button_camera"
