@@ -1,24 +1,13 @@
-# Case3FlashLight
+# Case 23. Avatar and Popup Window
 
-Android RuntimePermissionsBasic Sample
-
-This basic sample shows runtime permissions available in the Android M and above.
-It shows how to use the new runtime permissions API to check and request permissions through the
-support library.
+Android devices have Camera and Photo Gallery, which are two perfect resources for the Avatar. After years developing, the best practice has been set as a popup window providing a selection of Camera and Photo, and cropping the picture to fit the position, and show. 
  
 
 Introduction
 ------------
 
-Android M introduced runtime permissions. Applications targeting M and above need to request their
-permissions at runtime.
-This sample introduces the basic use of the runtime permissions API through the support library by
-verifying permissions (ActivityCompat#checkSelfPermission(Context, String)), requesting permissions (ActivityCompat#requestPermissions(Activity, String[], int))
-and handling the permission request callback (ActivityCompat.OnRequestPermissionsResultCallback).
-An application can display additional context and justification for a permission after calling
-ActivityCompat#shouldShowRequestPermissionRationale#shouldShowRequestPermissionRationale(Activity, String).
-
-See the "RuntimePermissions" sample for a more complete description and reference implementation.
+Avatar is a popular function in Android apps, which could increase user viscosity. It allows the user to add a sprinkle of character to their profile, and have their own imprint on it, and makes user feel good. It gives the user more sense of control over their own account which is always a nice feeling.
+If you doubt the function, think a wallet which has a photo area in them. Why? The answer should be same.
 
 Pre-requisites
 --------------
